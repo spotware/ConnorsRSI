@@ -63,6 +63,8 @@ namespace cAlgo
                 _upDownSeries[index] = upDownValue;
             }
 
+            if (index < RocPeriods) return;
+
             Result[index] = (_rsi.Result[index] + _upDownRsi.Result[index] + GetRoc(index)) / 3;
         }
 
@@ -72,13 +74,20 @@ namespace cAlgo
 
             for (int barIndex = index; barIndex > index - RocPeriods; barIndex--)
             {
-                percentChanges.Add((Bars.ClosePrices[barIndex] - Bars.OpenPrices[barIndex]) / Bars.OpenPrices[barIndex] * 100);
+                percentChanges.Add(GetBarChangePercent(barIndex));
             }
 
-            var currentBarPercentChange = (Bars.ClosePrices[index] - Bars.OpenPrices[index]) / Bars.OpenPrices[index] * 100;
-            var numberOfValuesLessThanGivenValue = percentChanges.Where(iValue => iValue <= currentBarPercentChange).Count();
+            var currentBarPercentChange = GetBarChangePercent(index);
+            var numberOfValuesLessThanGivenValue = percentChanges.Count(iValue => iValue <= currentBarPercentChange);
 
             return 100.0 * numberOfValuesLessThanGivenValue / percentChanges.Count;
+        }
+
+        private double GetBarChangePercent(int index)
+        {
+            var bar = Bars[index];
+
+            return (bar.Close - bar.Open) / bar.Open * 100;
         }
     }
 }
